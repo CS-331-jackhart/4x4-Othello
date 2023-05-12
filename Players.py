@@ -77,11 +77,66 @@ class AlphaBetaPlayer(Player):
             return "X"
 
 
-    def alphabeta(self, board):
-        # Write minimax function here using eval_board and get_successors
-        # type:(board) -> (int, int)
+    def alphabeta(self, board) -> (int, int):
         col, row = 0, 0
+
+        val = -float('inf')
+
+        for move in self.get_successors(board, self.symbol):
+            newBoard = board.cloneOBoard()
+            newBoard.play_move(move[0], move[1], self.symbol)
+
+            newVal = self.min_value(newBoard)
+            if val < newVal:
+                val = newVal
+                col = move[0]
+                row = move[1]
+
         return col, row
+
+    def max_value(self, board, alpha=-float('inf'), beta=float('inf'), depth=0) -> float:
+
+        # If we've reached a terminal state or max depth
+        if self.terminal_state(board):
+            return self.terminal_value(board)
+        elif depth == self.max_depth:
+            return self.eval_board(board)
+
+        val = -float('inf')
+
+        # Recursively find the best value out of all the successors
+        for move in self.get_successors(board, self.symbol):
+            newBoard = board.cloneOBoard()
+            newBoard.play_move(move[0], move[1], self.symbol)
+            val = max(val, self.min_value(newBoard, alpha, beta, depth+1))
+
+            if val >= beta:
+                return val
+            alpha = max(alpha, val)
+
+        return val
+
+    def min_value(self, board, alpha=-float('inf'), beta=float('inf')) -> float:
+
+        # If we've reached a terminal state or max depth
+        if self.terminal_state(board):
+            return self.terminal_value(board)
+        elif depth == self.max_depth:
+            return self.eval_board(board)
+
+        val = float('inf')
+
+        # Recursively find the worst value out of all the successors
+        for move in self.get_successors(board, self.symbol):
+            newBoard = board.cloneOBoard()
+            newBoard.play_move(move[0], move[1], self.oppSym)
+            val = min(val, self.max_value(newBoard, alpha, beta, depth+1))
+
+            if val <= beta:
+                return val
+            beta = min(beta, val)
+
+        return val
 
 
     def eval_board(self, board) -> float:
