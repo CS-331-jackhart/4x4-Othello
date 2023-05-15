@@ -1,6 +1,32 @@
 #!/bin/sh
 #p1type="human", p2type="minimax", p1_eval_type=0, p1_prune=False, p2_eval_type=0, p2_prune=False
 
-python GameDriver.py human human 0 0 0 0 8 8
-#python GameDriver.py human alphabeta 0 0 0 0 8 8
-#python GameDriver.py alphabeta alphabeta 0 0 0 0 8 8
+echo "Testing search vs. depth\n\n"
+echo "depth;pruning;heuristic;nodes\n"
+for I in 2 4 #6 8 10 12 # Depth
+do
+  for J in 0 1 # Pruning
+  do
+    for K in 0 1 2 # Heuristic
+    do
+      NODES=$(python GameDriver.py alphabeta alphabeta $K $J $K $J $I $I 0)
+      echo "$I;$J;$K;$NODES\n"
+    done
+  done
+done
+
+echo "Testing heuristic quality\n\n"
+echo "depth;h1;h2;win\n"
+for I in 2 4 6 8 # Depth
+do
+  for J in 0 1 2 # Heuristic
+  do
+    for K in 0 1 2 # Heuristic 2
+    do
+      if [[ $J -ne $K ]]; then
+        WIN=$(python GameDriver.py alphabeta alphabeta $J 1 $K 1 $I $I 1)
+        echo "$I;$J;$K;$WIN\n"
+      fi
+    done
+  done
+done

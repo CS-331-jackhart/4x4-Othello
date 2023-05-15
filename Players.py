@@ -82,19 +82,23 @@ class AlphaBetaPlayer(Player):
 
         val = -float('inf')
 
-        for move in self.get_successors(board, self.symbol):
-            newBoard = board.cloneOBoard()
-            newBoard.play_move(move[0], move[1], self.symbol)
-
-            newVal = self.min_value(newBoard)
+        for state in self.get_successors(board, self.symbol):
+            newVal = self.min_value(state)
             if val < newVal:
                 val = newVal
-                col = move[0]
-                row = move[1]
+                col = state.move[0]
+                row = state.move[1]
+
+        if val == -float('inf'):
+            newState = self.get_successors(board, self.symbol)[0]
+            col = state.move[0]
+            row = state.move[1]
 
         return col, row
 
     def max_value(self, board, alpha=-float('inf'), beta=float('inf'), depth=0) -> float:
+
+        self.total_nodes_seen += 1
 
         # If we've reached a terminal state or max depth
         if self.terminal_state(board):
@@ -105,18 +109,19 @@ class AlphaBetaPlayer(Player):
         val = -float('inf')
 
         # Recursively find the best value out of all the successors
-        for move in self.get_successors(board, self.symbol):
-            newBoard = board.cloneOBoard()
-            newBoard.play_move(move[0], move[1], self.symbol)
-            val = max(val, self.min_value(newBoard, alpha, beta, depth+1))
+        for state in self.get_successors(board, self.symbol):
+            val = max(val, self.min_value(state, alpha, beta, depth+1))
 
-            if val >= beta:
+            if self.prune and val >= beta:
                 return val
             alpha = max(alpha, val)
 
+
         return val
 
-    def min_value(self, board, alpha=-float('inf'), beta=float('inf')) -> float:
+    def min_value(self, board, alpha=-float('inf'), beta=float('inf'), depth=0) -> float:
+
+        self.total_nodes_seen += 1
 
         # If we've reached a terminal state or max depth
         if self.terminal_state(board):
@@ -127,12 +132,10 @@ class AlphaBetaPlayer(Player):
         val = float('inf')
 
         # Recursively find the worst value out of all the successors
-        for move in self.get_successors(board, self.symbol):
-            newBoard = board.cloneOBoard()
-            newBoard.play_move(move[0], move[1], self.oppSym)
-            val = min(val, self.max_value(newBoard, alpha, beta, depth+1))
+        for state in self.get_successors(board, self.oppSym):
+            val = min(val, self.max_value(state, alpha, beta, depth+1))
 
-            if val <= beta:
+            if self.prune and val <= alpha:
                 return val
             beta = min(beta, val)
 
@@ -141,12 +144,12 @@ class AlphaBetaPlayer(Player):
 
     def eval_board(self, board) -> float:
         value = 0
-        if self.eval_type == 0:
+        if self.eval_type == '0':
             value = board.count_score(self.symbol) - board.count_score(self.oppSym)
-        elif self.eval_type == 1:
-            value = self.get_successors(board, self.symbol) - self.get_successors(board, self.oppSym)
-        elif self.eval_type == 2:
-            value = 0
+        elif self.eval_type == '1':
+            value = len(self.get_successors(board, self.symbol)) - len(self.get_successors(board, self.oppSym))
+        elif self.eval_type == '2':
+            value = board.count_score(self.symbol)
         return value
 
 
@@ -156,10 +159,17 @@ class AlphaBetaPlayer(Player):
         if not board.has_legal_moves_remaining(player_symbol):
             return []
 
-        for x in board.cols:
-            for y in board.rows:
-                if board.is_legal_move(x, y, player_symbol):
-                    successors.append((x, y))
+        for x in range(board.cols):
+            for y in range(board.rows):
+                if board.has_legal_moves_remaining(player_symbol):
+                    if board.is_legal_move(x, y, player_symbol):
+                        #print(x, y)
+                        newBoard = board.cloneOBoard()
+                        newBoard.play_move(x, y, player_symbol)
+                        newBoard.move = (x, y)
+                        successors.append(newBoard)
+                else:
+                    return successors
 
         return successors 
 
