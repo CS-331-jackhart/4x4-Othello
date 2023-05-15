@@ -1,9 +1,7 @@
 #!/bin/sh
-#p1type="human", p2type="minimax", p1_eval_type=0, p1_prune=False, p2_eval_type=0, p2_prune=False
-
 echo "Testing search vs. depth\n\n"
 echo "depth;pruning;heuristic;nodes\n"
-for I in 2 4 #6 8 10 12 # Depth
+for I in 2 4 6 8 10 12 # Depth
 do
   for J in 0 1 # Pruning
   do

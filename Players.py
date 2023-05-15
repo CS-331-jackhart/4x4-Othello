@@ -112,7 +112,7 @@ class AlphaBetaPlayer(Player):
         for state in self.get_successors(board, self.symbol):
             val = max(val, self.min_value(state, alpha, beta, depth+1))
 
-            if self.prune and val >= beta:
+            if self.prune == '1' and val >= beta:
                 return val
             alpha = max(alpha, val)
 
@@ -135,7 +135,7 @@ class AlphaBetaPlayer(Player):
         for state in self.get_successors(board, self.oppSym):
             val = min(val, self.max_value(state, alpha, beta, depth+1))
 
-            if self.prune and val <= alpha:
+            if self.prune == '1' and val <= alpha:
                 return val
             beta = min(beta, val)
 
